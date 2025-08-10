@@ -1,4 +1,4 @@
-package com.example.exception;
+package group.kiseki.exception;
 
 import com.example.model.ErrorResponse;
 import org.springframework.http.HttpStatus;

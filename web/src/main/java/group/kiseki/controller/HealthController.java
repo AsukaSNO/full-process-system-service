@@ -1,4 +1,4 @@
-package com.example.controller;
+package group.kiseki.controller;
 
 import com.example.model.HealthResponse;
 import org.springframework.http.ResponseEntity;

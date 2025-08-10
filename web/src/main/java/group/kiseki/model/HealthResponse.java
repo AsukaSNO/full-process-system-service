@@ -1,4 +1,4 @@
-package com.example.model;
+package group.kiseki.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
