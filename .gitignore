@@ -1,6 +1,7 @@
 # Compiled class file
-target/
+target
 .idea
+.cursor
 
 # Log file
 *.log

@@ -1,6 +1,8 @@
 package group.kiseki.exception;
 
-import com.example.model.ErrorResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import group.kiseki.model.ErrorResponse;
+import lombok.SneakyThrows;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -12,9 +14,7 @@ import java.time.format.DateTimeFormatter;
 
 /**
  * 全局异常处理器
- * 
- * @author system
- * @version 1.0.0
+ *
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -27,12 +27,13 @@ public class GlobalExceptionHandler {
      * @return 错误响应
      */
     @ExceptionHandler(Exception.class)
+    @SneakyThrows
     public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, WebRequest request) {
         ErrorResponse errorResponse = new ErrorResponse();
         errorResponse.setTimestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         errorResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        errorResponse.setError("Internal Server Error");
-        errorResponse.setMessage("服务器内部错误");
+        errorResponse.setError(new ObjectMapper().writeValueAsString(ex));
+        errorResponse.setMessage("Unknown Internal Server Error");
         errorResponse.setPath(request.getDescription(false).replace("uri=", ""));
         
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);

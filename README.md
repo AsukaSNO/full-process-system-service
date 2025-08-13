@@ -1,169 +1,138 @@
 # 全流程系统服务 (Full Process System Service)
 
 ## 项目简介
-
-这是一个基于Spring Boot 3.x的全流程系统服务后端应用，使用Java 21和Tomcat 10构建，支持前后端分离架构。
+这是一个基于Spring Boot + MyBatis-Plus的全流程系统服务项目。
 
 ## 技术栈
-
-- **Java**: 21
-- **Spring Boot**: 3.2.0
-- **Tomcat**: 10.x (内嵌)
-- **Maven**: 构建工具
-- **Jackson**: JSON处理
-- **Spring Boot Actuator**: 健康检查和监控
+- Java 21
+- Spring Boot 3.2.0
+- MyBatis-Plus 3.5.4.1
+- MySQL 8.0
+- Maven
 
 ## 项目结构
-
 ```
-src/
-├── main/
-│   ├── java/
-│   │   └── com/
-│   │       └── example/
-│   │           ├── FullProcessSystemServiceApplication.java  # 主启动类
-│   │           ├── controller/
-│   │           │   └── HealthController.java                 # 健康检查控制器
-│   │           ├── model/
-│   │           │   ├── HealthResponse.java                   # 健康检查响应模型
-│   │           │   └── ErrorResponse.java                    # 错误响应模型
-│   │           ├── config/
-│   │           │   └── CorsConfig.java                       # CORS配置
-│   │           └── exception/
-│   │               └── GlobalExceptionHandler.java           # 全局异常处理器
-│   └── resources/
-│       └── application.yml                                   # 应用配置文件
-└── test/
-    └── java/
-        └── com/
-            └── example/
-                ├── FullProcessSystemServiceApplicationTests.java  # 应用测试
-                └── controller/
-                    └── HealthControllerTest.java                 # 控制器测试
+full-process-system-service/
+├── common/          # 公共模块
+├── dal/            # 数据访问层模块
+│   ├── entity/     # 实体类
+│   ├── mapper/     # Mapper接口
+│   └── service/    # 服务接口和实现
+├── service/        # 业务服务模块
+├── web/           # Web控制器模块
+└── database/      # 数据库脚本
 ```
 
 ## 快速开始
 
-### 环境要求
-
+### 1. 环境要求
 - JDK 21+
+- MySQL 8.0+
 - Maven 3.6+
 
-### 构建和运行
+### 2. 数据库配置
+1. 创建数据库：
+```sql
+CREATE DATABASE `fulldb` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+```
 
-1. **克隆项目**
-   ```bash
-   git clone <repository-url>
-   cd fullProcessSystemService
-   ```
+2. 执行初始化脚本：
+```bash
+mysql -u root -p < database/init.sql
+```
 
-2. **编译项目**
-   ```bash
-   mvn clean compile
-   ```
+3. 修改数据库连接配置（web/src/main/resources/application.yml）：
+```yaml
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/fulldb?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    loginName: your_username
+    password: your_password
+```
 
-3. **运行应用**
-   ```bash
-   mvn spring-boot:run
-   ```
+### 3. 启动项目
+```bash
+# 编译项目
+mvn clean compile
 
-4. **打包应用**
-   ```bash
-   mvn clean package
-   ```
+# 启动项目
+mvn spring-boot:run -pl web
+```
 
-5. **运行JAR包**
-   ```bash
-   java -jar target/full-process-system-service-1.0.0.jar
-   ```
+### 4. 测试API
+项目启动后，可以通过以下接口测试：
 
-## API接口
+#### 认证接口（无需token）
+- 用户注册：`POST http://localhost:8081/api/auth/register`
+- 用户登录：`POST http://localhost:8081/api/auth/login`
+- 刷新Token：`POST http://localhost:8081/api/auth/refresh`
 
-### 健康检查接口
+#### 用户管理接口（需要token）
+- 获取所有用户：`GET http://localhost:8081/api/users`
+- 分页查询：`GET http://localhost:8081/api/users/page?current=1&size=10`
+- 根据ID查询：`GET http://localhost:8081/api/users/1`
+- 创建用户：`POST http://localhost:8081/api/users`
+- 更新用户：`PUT http://localhost:8081/api/users/1`
+- 删除用户：`DELETE http://localhost:8081/api/users/1`
 
-- **URL**: `GET /api/health/checkHealth`
-- **描述**: 检查系统健康状态
-- **响应示例**:
-  ```json
-  {
-    "status": "UP",
-    "message": "系统运行正常",
-    "timestamp": "2024-01-01 12:00:00",
-    "version": "1.0.0"
-  }
-  ```
+#### 用户认证接口（需要token）
+- 获取用户信息：`GET http://localhost:8081/api/auth/profile`
+- 用户登出：`POST http://localhost:8081/api/auth/logout`
 
-### 其他监控接口
+**注意：** 需要认证的接口请在请求头中添加：`Authorization: Bearer {token}`
 
-- **健康检查**: `GET /actuator/health`
-- **应用信息**: `GET /actuator/info`
-- **指标信息**: `GET /actuator/metrics`
+## 主要功能
+
+### 用户管理
+- 用户的增删改查
+- 分页查询
+- 条件搜索（按昵称）
+
+### 用户认证
+- 用户注册和登录
+- Token认证（有效期30天）
+- 自动刷新Token
+- 会话管理
+- 密码加密存储（MD5+盐值）
+
+### MyBatis-Plus特性
+- 通用CRUD操作
+- 分页插件
+- 条件构造器
+- 自动填充
+- 逻辑删除
 
 ## 配置说明
 
-### 应用配置 (application.yml)
+### MyBatis-Plus配置
+- 开启驼峰命名转换
+- 配置分页插件
+- 支持逻辑删除
+- 自动类型转换
 
-- **服务器端口**: 8080
-- **应用名称**: full-process-system-service
-- **时区**: GMT+8
-- **日志级别**: DEBUG (com.example包)
-- **CORS**: 支持跨域请求
+### 数据库配置
+- 支持UTF-8编码
+- 配置时区为Asia/Shanghai
+- 禁用SSL连接
 
-### 主要特性
+## 开发说明
 
-1. **前后端分离**: 配置了CORS支持，允许前端应用跨域访问
-2. **健康检查**: 提供自定义健康检查接口和Spring Boot Actuator健康检查
-3. **异常处理**: 全局异常处理器，统一处理API异常
-4. **日志记录**: 配置了详细的日志记录
-5. **监控支持**: 集成Spring Boot Actuator提供监控端点
+### 添加新的实体类
+1. 在`dal/src/main/java/group/kiseki/dal/entity/`下创建实体类
+2. 在`dal/src/main/java/group/kiseki/dal/mapper/`下创建Mapper接口
+3. 在`dal/src/main/java/group/kiseki/dal/service/`下创建Service接口和实现
+4. 在`web/src/main/java/group/kiseki/controller/`下创建Controller
 
-## 开发指南
+### 实体类注解说明
+- `@TableName`: 指定表名
+- `@TableId`: 指定主键字段和类型
+- `@TableField`: 指定字段映射（可选）
 
-### 添加新的API接口
-
-1. 在`controller`包下创建新的控制器类
-2. 在`model`包下创建相应的数据模型类
-3. 添加相应的测试类
-4. 更新API文档
-
-### 测试
-
-运行所有测试：
-```bash
-mvn test
-```
-
-运行特定测试：
-```bash
-mvn test -Dtest=HealthControllerTest
-```
-
-## 部署
-
-### Docker部署
-
-1. 构建Docker镜像：
-   ```bash
-   docker build -t full-process-system-service .
-   ```
-
-2. 运行容器：
-   ```bash
-   docker run -p 8080:8080 full-process-system-service
-   ```
-
-### 生产环境配置
-
-建议在生产环境中：
-- 修改日志级别为INFO或WARN
-- 配置适当的数据库连接
-- 设置安全配置
-- 配置监控和告警
+## 注意事项
+1. 确保MySQL服务已启动
+2. 检查数据库连接配置是否正确
+3. 首次运行需要执行数据库初始化脚本
+4. 默认端口为8081，可在application.yml中修改
 
 ## 许可证
-
-本项目采用MIT许可证。
-
-## 联系方式
-
-如有问题或建议，请联系开发团队。 
+MIT License 

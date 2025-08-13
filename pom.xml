@@ -14,8 +14,8 @@
 
     <groupId>group.kiseki</groupId>
     <artifactId>full-process-system-service</artifactId>
-    <packaging>pom</packaging>
     <version>1.0.0</version>
+    <packaging>pom</packaging>
     <name>full-process-system-service</name>
     <description>全流程系统服务</description>
 
@@ -24,7 +24,6 @@
         <module>dal</module>
         <module>service</module>
         <module>web</module>
-        <module>untitled</module>
     </modules>
 
     <properties>
@@ -32,111 +31,78 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring-boot.version>3.2.0</spring-boot.version>
-        <jackson.version>2.15.2</jackson.version>
+        <mybatis-plus.version>3.5.4.1</mybatis-plus.version>
+        <mysql.version>8.0.33</mysql.version>
+        <druid.version>1.2.20</druid.version>
     </properties>
-    <build>
-        <defaultGoal>compile</defaultGoal>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-maven-plugin</artifactId>
-                    <version>${spring-boot.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.11.0</version>
-                    <configuration>
-                        <source>${java.version}</source>
-                        <target>${java.version}</target>
-                        <encoding>${project.build.sourceEncoding}</encoding>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <configuration>
-                        <systemPropertyVariables>
-                            <jacoco-agent.destfile>target/jacoco.exec</jacoco-agent.destfile>
-                        </systemPropertyVariables>
-                        <forkCount>6</forkCount>
-                        <reuseForks>false</reuseForks>
-                        <argLine>-Xmx1024m</argLine>
-                    </configuration>
-                </plugin>
-                <!-- specifying jdk version and character encoding code file -->
-                <!-- specifying UTF-8 character encoding scheme for resource file -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-resources-plugin</artifactId>
-                    <version>2.4.1</version>
-                    <configuration>
-                        <encoding>UTF-8</encoding>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.gmavenplus</groupId>
-                    <artifactId>gmavenplus-plugin</artifactId>
-                    <version>${gmavenplus-plugin.version}</version>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>compile</goal>
-                                <goal>testCompile</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
+
     <dependencyManagement>
         <dependencies>
-            <!-- 内部模块依赖 -->
+            <!-- 内部模块依赖管理 -->
             <dependency>
                 <groupId>group.kiseki</groupId>
-                <artifactId>common</artifactId>
+                <artifactId>kiseki-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>group.kiseki</groupId>
-                <artifactId>dal</artifactId>
+                <artifactId>kiseki-dal</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>group.kiseki</groupId>
-                <artifactId>service</artifactId>
+                <artifactId>kiseki-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            
+            <!-- MyBatis Plus -->
             <dependency>
-                <groupId>group.kiseki</groupId>
-                <artifactId>web</artifactId>
-                <version>${project.version}</version>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-boot-starter</artifactId>
+                <version>${mybatis-plus.version}</version>
             </dependency>
-
-            <!-- 外部依赖版本管理 -->
+            
+            <!-- MySQL驱动 -->
             <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>${jackson.version}</version>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql.version}</version>
+            </dependency>
+            
+            <!-- Druid连接池 -->
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>druid-spring-boot-starter</artifactId>
+                <version>${druid.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.18.38</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
-        <!-- 测试依赖 -->
+        <!-- Lombok -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>21</source>
+                    <target>21</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project> 

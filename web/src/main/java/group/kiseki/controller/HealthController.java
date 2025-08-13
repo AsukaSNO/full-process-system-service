@@ -1,6 +1,6 @@
 package group.kiseki.controller;
 
-import com.example.model.HealthResponse;
+import group.kiseki.model.HealthResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,12 +11,10 @@ import java.time.format.DateTimeFormatter;
 
 /**
  * 健康检查控制器
- * 
- * @author system
- * @version 1.0.0
+ * @author Yan
  */
 @RestController
-@RequestMapping("/api/health")
+@RequestMapping("/api")
 public class HealthController {
 
     /**
@@ -28,7 +26,7 @@ public class HealthController {
     public ResponseEntity<HealthResponse> checkHealth() {
         HealthResponse response = new HealthResponse();
         response.setStatus("UP");
-        response.setMessage("系统运行正常");
+        response.setMessage("system running...");
         response.setTimestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         response.setVersion("1.0.0");
         

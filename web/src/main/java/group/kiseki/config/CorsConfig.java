@@ -13,9 +13,8 @@ import java.util.List;
 
 /**
  * CORS跨域配置
- * 
- * @author system
- * @version 1.0.0
+ *
+ * @author Yan
  */
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {

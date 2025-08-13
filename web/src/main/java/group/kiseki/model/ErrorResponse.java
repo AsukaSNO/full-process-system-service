@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * 错误响应模型
  * 
- * @author system
+ * @author Yan
  * @version 1.0.0
  */
 public class ErrorResponse {
