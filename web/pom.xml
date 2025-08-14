@@ -33,6 +33,13 @@
             <artifactId>dal</artifactId>
             <version>1.0.0</version>
         </dependency>
+
+        <!-- Service模块依赖 -->
+        <dependency>
+            <groupId>group.kiseki</groupId>
+            <artifactId>service</artifactId>
+            <version>1.0.0</version>
+        </dependency>
     </dependencies>
 
 </project>

@@ -17,8 +17,12 @@ full-process-system-service/
 ├── dal/            # 数据访问层模块
 │   ├── entity/     # 实体类
 │   ├── mapper/     # Mapper接口
-│   └── service/    # 服务接口和实现
+│   └── service/    # 基础服务接口和实现
 ├── service/        # 业务服务模块
+│   └── auth/       # 认证相关服务
+│       ├── dto/    # 数据传输对象
+│       ├── service/ # 业务服务接口和实现
+│       └── util/   # 工具类
 ├── web/           # Web控制器模块
 └── database/      # 数据库脚本
 ```
@@ -117,11 +121,20 @@ mvn spring-boot:run -pl web
 
 ## 开发说明
 
-### 添加新的实体类
-1. 在`dal/src/main/java/group/kiseki/dal/entity/`下创建实体类
-2. 在`dal/src/main/java/group/kiseki/dal/mapper/`下创建Mapper接口
-3. 在`dal/src/main/java/group/kiseki/dal/service/`下创建Service接口和实现
-4. 在`web/src/main/java/group/kiseki/controller/`下创建Controller
+### 添加新的功能模块
+1. **数据层（DAL）**：
+   - 在`dal/src/main/java/group/kiseki/dal/entity/`下创建实体类
+   - 在`dal/src/main/java/group/kiseki/dal/mapper/`下创建Mapper接口
+   - 在`dal/src/main/java/group/kiseki/dal/service/`下创建基础Service接口和实现
+
+2. **业务层（Service）**：
+   - 在`service/src/main/java/group/kiseki/`下创建业务模块文件夹
+   - 在模块文件夹下创建`dto/`、`service/`、`util/`等子文件夹
+   - 实现具体的业务逻辑
+
+3. **控制层（Web）**：
+   - 在`web/src/main/java/group/kiseki/controller/`下创建Controller
+   - Controller只负责参数验证和调用Service层方法
 
 ### 实体类注解说明
 - `@TableName`: 指定表名
