@@ -1,8 +1,8 @@
 package group.kiseki.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import group.kiseki.dal.entity.UserInfo;
+import group.kiseki.dal.entity.UserInfoDO;
 import group.kiseki.dal.service.UserInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -25,16 +25,16 @@ public class UserController {
      * 创建用户
      */
     @PostMapping
-    public UserInfo createUser(@RequestBody UserInfo userInfo) {
-        userInfoService.save(userInfo);
-        return userInfo;
+    public UserInfoDO createUser(@RequestBody UserInfoDO userInfoDO) {
+        userInfoService.save(userInfoDO);
+        return userInfoDO;
     }
 
     /**
      * 根据ID获取用户
      */
     @GetMapping("/{id}")
-    public UserInfo getUserById(@PathVariable Integer id) {
+    public UserInfoDO getUserById(@PathVariable Integer id) {
         return userInfoService.getById(id);
     }
 
@@ -42,7 +42,7 @@ public class UserController {
      * 获取所有用户
      */
     @GetMapping
-    public List<UserInfo> getAllUsers() {
+    public List<UserInfoDO> getAllUsers() {
         return userInfoService.list();
     }
 
@@ -50,10 +50,10 @@ public class UserController {
      * 分页查询用户
      */
     @GetMapping("/page")
-    public Page<UserInfo> getUsersByPage(
+    public Page<UserInfoDO> getUsersByPage(
             @RequestParam(defaultValue = "1") Integer current,
             @RequestParam(defaultValue = "10") Integer size) {
-        Page<UserInfo> page = new Page<>(current, size);
+        Page<UserInfoDO> page = new Page<>(current, size);
         return userInfoService.page(page);
     }
 
@@ -61,19 +61,19 @@ public class UserController {
      * 根据昵称查询用户
      */
     @GetMapping("/search")
-    public List<UserInfo> searchUsersByNickname(@RequestParam String nickname) {
-        QueryWrapper<UserInfo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.like("nickname", nickname);
-        return userInfoService.list(queryWrapper);
+    public List<UserInfoDO> searchUsersByNickname(@RequestParam String nickname) {
+        LambdaQueryWrapper<UserInfoDO> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.like(UserInfoDO::getNickname, nickname);
+        return userInfoService.list(lambdaQueryWrapper);
     }
 
     /**
      * 更新用户
      */
     @PutMapping("/{id}")
-    public boolean updateUser(@PathVariable Integer id, @RequestBody UserInfo userInfo) {
-        userInfo.setUid(id);
-        return userInfoService.updateById(userInfo);
+    public boolean updateUser(@PathVariable Integer id, @RequestBody UserInfoDO userInfoDO) {
+        userInfoDO.setUid(id);
+        return userInfoService.updateById(userInfoDO);
     }
 
     /**

@@ -8,18 +8,17 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 /**
- * 用户认证实体类
+ * 用户信息实体类
  *
  * @author Yan
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("user_auth")
-public class UserAuth implements Serializable {
+@TableName("user_info")
+public class UserInfoDO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -30,42 +29,42 @@ public class UserAuth implements Serializable {
     private Integer uid;
 
     /**
-     * 用户名，唯一
+     * 昵称
      */
-    private String loginName;
+    private String nickname;
 
     /**
-     * 密码
+     * 性别：0-未知，1-男，2-女
      */
-    private String password;
+    private Integer gender;
 
     /**
-     * 密码盐值
+     * 手机号
      */
-    private String salt;
+    private String mobile;
 
     /**
-     * 状态：-1-删除，0-禁用，1-启用
+     * 邮箱
      */
-    private Integer status;
+    private String email;
 
     /**
-     * 最后登录时间
+     * 头像URL
      */
-    private LocalDateTime lastLoginTime;
+    private String avatar;
 
     /**
-     * 最后登录IP
+     * 机构
      */
-    private String lastLoginIp;
+    private String organization;
 
     /**
-     * 创建时间
+     * 签名
      */
-    private LocalDateTime createTime;
+    private String signature;
 
     /**
-     * 更新时间
+     * 备注
      */
-    private LocalDateTime updateTime;
+    private String remark;
 }

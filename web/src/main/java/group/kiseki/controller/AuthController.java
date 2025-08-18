@@ -1,8 +1,9 @@
 package group.kiseki.controller;
 
-import group.kiseki.auth.dto.LoginRequest;
-import group.kiseki.auth.dto.RefreshTokenRequest;
-import group.kiseki.auth.dto.UserDTO;
+import group.kiseki.auth.entity.LoginRequest;
+import group.kiseki.auth.entity.RefreshTokenRequest;
+import group.kiseki.auth.entity.RegisterResult;
+import group.kiseki.auth.entity.UserDTO;
 import group.kiseki.auth.service.AuthService;
 import group.kiseki.auth.util.HttpUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,19 +34,19 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@RequestBody UserDTO userDTO) {
         Map<String, Object> response = new HashMap<>();
-        
+
         try {
             // 执行注册
-            boolean success = authService.register(userDTO);
-            
-            if (success) {
+            RegisterResult registerResult = authService.register(userDTO);
+
+            if (RegisterResult.SUCCESS.equals(registerResult)) {
                 response.put("success", true);
                 response.put("message", "注册成功");
             } else {
                 response.put("success", false);
                 response.put("message", "注册失败，用户名已存在或参数错误");
             }
-            
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
@@ -60,14 +61,14 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest loginRequest, HttpServletRequest httpRequest) {
         Map<String, Object> response = new HashMap<>();
-        
+
         try {
             String clientIp = HttpUtil.getClientIp(httpRequest);
             String userAgent = httpRequest.getHeader("User-Agent");
 
-            group.kiseki.auth.dto.LoginResult loginResult = authService.login(
-                loginRequest, 
-                clientIp, 
+            group.kiseki.auth.entity.LoginResult loginResult = authService.login(
+                loginRequest,
+                clientIp,
                 userAgent
             );
 
@@ -76,9 +77,9 @@ public class AuthController {
                 response.put("message", "登录成功");
                 response.put("token", loginResult.getToken());
                 response.put("refreshToken", loginResult.getRefreshToken());
-                response.put("user", loginResult.getUserInfo());
+                response.put("user", loginResult.getUserInfoDO());
                 response.put("expireTime", loginResult.getExpireTime());
-                
+
                 return ResponseEntity.ok(response);
             } else {
                 response.put("success", false);
@@ -98,10 +99,10 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<Map<String, Object>> refreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
         Map<String, Object> response = new HashMap<>();
-        
+
         try {
             String newToken = authService.refreshToken(refreshTokenRequest);
-            
+
             if (newToken != null) {
                 response.put("success", true);
                 response.put("message", "Token刷新成功");
@@ -125,11 +126,11 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<Map<String, Object>> logout(@RequestHeader("Authorization") String token) {
         Map<String, Object> response = new HashMap<>();
-        
+
         try {
             String extractedToken = HttpUtil.extractTokenFromHeader(token);
             boolean success = authService.logout(extractedToken);
-            
+
             if (success) {
                 response.put("success", true);
                 response.put("message", "登出成功");
@@ -137,7 +138,7 @@ public class AuthController {
                 response.put("success", false);
                 response.put("message", "登出失败");
             }
-            
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
@@ -152,11 +153,11 @@ public class AuthController {
     @GetMapping("/profile")
     public ResponseEntity<Map<String, Object>> getProfile(@RequestHeader("Authorization") String token) {
         Map<String, Object> response = new HashMap<>();
-        
+
         try {
             String extractedToken = HttpUtil.extractTokenFromHeader(token);
             Integer userId = authService.validateToken(extractedToken);
-            
+
             if (userId != null) {
                 response.put("success", true);
                 response.put("message", "获取用户信息成功");

@@ -1,7 +1,7 @@
 package group.kiseki.dal.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import group.kiseki.dal.entity.UserSession;
+import group.kiseki.dal.entity.UserSessionDO;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -10,6 +10,6 @@ import org.apache.ibatis.annotations.Mapper;
  * @author Yan
  */
 @Mapper
-public interface UserSessionMapper extends BaseMapper<UserSession> {
+public interface UserSessionMapper extends BaseMapper<UserSessionDO> {
 
 }

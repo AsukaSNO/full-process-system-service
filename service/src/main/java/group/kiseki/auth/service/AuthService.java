@@ -1,9 +1,6 @@
 package group.kiseki.auth.service;
 
-import group.kiseki.auth.dto.LoginRequest;
-import group.kiseki.auth.dto.LoginResult;
-import group.kiseki.auth.dto.RefreshTokenRequest;
-import group.kiseki.auth.dto.UserDTO;
+import group.kiseki.auth.entity.*;
 
 /**
  * 认证服务接口
@@ -18,7 +15,7 @@ public interface AuthService {
      * @param userDTO 用户注册信息
      * @return 注册结果
      */
-    boolean register(UserDTO userDTO);
+    RegisterResult register(UserDTO userDTO);
 
     /**
      * 用户登录

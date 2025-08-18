@@ -1,18 +1,16 @@
 package group.kiseki.auth.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import group.kiseki.auth.dto.LoginRequest;
-import group.kiseki.auth.dto.LoginResult;
-import group.kiseki.auth.dto.RefreshTokenRequest;
-import group.kiseki.auth.dto.UserDTO;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import group.kiseki.auth.entity.*;
 import group.kiseki.auth.service.AuthService;
-import group.kiseki.dal.entity.UserAuth;
-import group.kiseki.dal.entity.UserInfo;
-import group.kiseki.dal.entity.UserSession;
+import group.kiseki.dal.entity.UserAuthDO;
+import group.kiseki.dal.entity.UserInfoDO;
+import group.kiseki.dal.entity.UserSessionDO;
 import group.kiseki.dal.mapper.UserAuthMapper;
 import group.kiseki.dal.mapper.UserInfoMapper;
 import group.kiseki.dal.mapper.UserSessionMapper;
 import group.kiseki.dal.service.UserInfoService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,22 +41,21 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private UserSessionMapper userSessionMapper;
 
-    // Token过期时间：30天
-    private static final long TOKEN_EXPIRE_DAYS = 30;
-    // 刷新Token过期时间：60天
-    private static final long REFRESH_TOKEN_EXPIRE_DAYS = 60;
+    // Token过期时间：1天
+    private static final long TOKEN_EXPIRE_DAYS = 1;
+    // 刷新Token过期时间：30天
+    private static final long REFRESH_TOKEN_EXPIRE_DAYS = 30;
 
     @Override
     @Transactional
-    public boolean register(UserDTO userDTO) {
-        // 检查参数
-        if (Objects.isNull(userDTO) || Objects.isNull(userDTO.getLoginName()) || Objects.isNull(userDTO.getPassword())) {
-            return false;
+    public RegisterResult register(UserDTO userDTO) {
+        if (Objects.isNull(userDTO) || StringUtils.isAnyBlank(userDTO.getLoginName(), userDTO.getPassword())) {
+            return RegisterResult.WRONG_PARAM;
         }
 
         // 检查用户名是否已存在
         if (isLoginNameExists(userDTO.getLoginName())) {
-            return false;
+            return RegisterResult.ALREADY_EXIST_LOGIN_NAME;
         }
 
         // 加盐
@@ -66,45 +63,44 @@ public class AuthServiceImpl implements AuthService {
         String encryptedPassword = encryptPassword(userDTO.getPassword(), salt);
 
         // 保存用户基本信息
-        UserInfo userInfo = new UserInfo();
-        userInfo.setNickname(userDTO.getLoginName());
-
-        userInfoService.save(userInfo);
+        UserInfoDO userInfoDO = new UserInfoDO();
+        userInfoDO.setNickname(userDTO.getLoginName());
+        userInfoService.save(userInfoDO);
 
         // 保存用户认证信息
-        UserAuth userAuth = new UserAuth();
-        userAuth.setUid(userInfo.getUid());
-        userAuth.setLoginName(userDTO.getLoginName());
-        userAuth.setPassword(encryptedPassword);
-        userAuth.setSalt(salt);
-        userAuth.setStatus(1);
-        userAuth.setCreateTime(LocalDateTime.now());
-        userAuth.setUpdateTime(LocalDateTime.now());
+        UserAuthDO userAuthDO = new UserAuthDO();
+        userAuthDO.setUid(userInfoDO.getUid());
+        userAuthDO.setLoginName(userDTO.getLoginName());
+        userAuthDO.setPassword(encryptedPassword);
+        userAuthDO.setSalt(salt);
+        userAuthDO.setStatus(1);
+        userAuthDO.setCreateTime(LocalDateTime.now());
+        userAuthDO.setUpdateTime(LocalDateTime.now());
 
-        return userAuthMapper.insert(userAuth) > 0;
+        return userAuthMapper.insert(userAuthDO) > 0 ? RegisterResult.SUCCESS : RegisterResult.FALI;
     }
 
     @Override
     @Transactional
     public LoginResult login(LoginRequest loginRequest, String clientIp, String userAgent) {
         // 查询用户认证信息
-        QueryWrapper<UserAuth> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("loginName", loginRequest.getLoginName()).eq("status", 1);
-        UserAuth userAuth = userAuthMapper.selectOne(queryWrapper);
+        LambdaQueryWrapper<UserAuthDO> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserAuthDO::getLoginName, loginRequest.getLoginName()).eq(UserAuthDO::getStatus, 1);
+        UserAuthDO userAuthDO = userAuthMapper.selectOne(lambdaQueryWrapper);
 
-        if (userAuth == null) {
+        if (userAuthDO == null) {
             return null;
         }
 
         // 验证密码
-        String encryptedPassword = encryptPassword(loginRequest.getPassword(), userAuth.getSalt());
-        if (!encryptedPassword.equals(userAuth.getPassword())) {
+        String encryptedPassword = encryptPassword(loginRequest.getPassword(), userAuthDO.getSalt());
+        if (!encryptedPassword.equals(userAuthDO.getPassword())) {
             return null;
         }
 
         // 查询用户基本信息
-        UserInfo userInfo = userInfoService.getById(userAuth.getUid());
-        if (userInfo == null) {
+        UserInfoDO userInfoDO = userInfoService.getById(userAuthDO.getUid());
+        if (userInfoDO == null) {
             return null;
         }
 
@@ -117,29 +113,29 @@ public class AuthServiceImpl implements AuthService {
         LocalDateTime expireTime = now.plusDays(TOKEN_EXPIRE_DAYS);
 
         // 保存会话信息
-        UserSession userSession = new UserSession();
-        userSession.setUid(userInfo.getUid());
-        userSession.setToken(token);
-        userSession.setRefreshToken(refreshToken);
-        userSession.setExpireTime(expireTime);
-        userSession.setCreateTime(now);
-        userSession.setLastActiveTime(now);
-        userSession.setClientIp(clientIp);
-        userSession.setUserAgent(userAgent);
-        userSession.setStatus(1);
+        UserSessionDO userSessionDO = new UserSessionDO();
+        userSessionDO.setUid(userInfoDO.getUid());
+        userSessionDO.setToken(token);
+        userSessionDO.setRefreshToken(refreshToken);
+        userSessionDO.setExpireTime(expireTime);
+        userSessionDO.setCreateTime(now);
+        userSessionDO.setLastActiveTime(now);
+        userSessionDO.setClientIp(clientIp);
+        userSessionDO.setUserAgent(userAgent);
+        userSessionDO.setStatus(1);
 
-        userSessionMapper.insert(userSession);
+        userSessionMapper.insert(userSessionDO);
 
         // 更新最后登录时间
-        userAuth.setLastLoginTime(now);
-        userAuth.setLastLoginIp(clientIp);
-        userAuth.setUpdateTime(now);
-        userAuthMapper.updateById(userAuth);
+        userAuthDO.setLastLoginTime(now);
+        userAuthDO.setLastLoginIp(clientIp);
+        userAuthDO.setUpdateTime(now);
+        userAuthMapper.updateById(userAuthDO);
 
         return LoginResult.builder()
                 .token(token)
                 .refreshToken(refreshToken)
-                .userInfo(userInfo)
+                .userInfoDO(userInfoDO)
                 .expireTime(expireTime.toEpochSecond(ZoneOffset.of("+8")))
                 .build();
     }
@@ -147,13 +143,13 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String refreshToken(RefreshTokenRequest refreshTokenRequest) {
         // 查询有效的刷新token
-        QueryWrapper<UserSession> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("refresh_token", refreshTokenRequest.getRefreshToken())
-                   .eq("status", 1)
-                   .gt("expire_time", LocalDateTime.now());
+        LambdaQueryWrapper<UserSessionDO> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserSessionDO::getRefreshToken, refreshTokenRequest.getRefreshToken())
+                   .eq(UserSessionDO::getStatus, 1)
+                   .gt(UserSessionDO::getExpireTime, LocalDateTime.now());
 
-        UserSession userSession = userSessionMapper.selectOne(queryWrapper);
-        if (userSession == null) {
+        UserSessionDO userSessionDO = userSessionMapper.selectOne(lambdaQueryWrapper);
+        if (userSessionDO == null) {
             return null;
         }
 
@@ -162,50 +158,50 @@ public class AuthServiceImpl implements AuthService {
         LocalDateTime newExpireTime = LocalDateTime.now().plusDays(TOKEN_EXPIRE_DAYS);
 
         // 更新会话信息
-        userSession.setToken(newToken);
-        userSession.setExpireTime(newExpireTime);
-        userSession.setLastActiveTime(LocalDateTime.now());
-        userSessionMapper.updateById(userSession);
+        userSessionDO.setToken(newToken);
+        userSessionDO.setExpireTime(newExpireTime);
+        userSessionDO.setLastActiveTime(LocalDateTime.now());
+        userSessionMapper.updateById(userSessionDO);
 
         return newToken;
     }
 
     @Override
     public boolean logout(String token) {
-        QueryWrapper<UserSession> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("token", token);
+        LambdaQueryWrapper<UserSessionDO> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserSessionDO::getToken, token);
 
-        UserSession userSession = userSessionMapper.selectOne(queryWrapper);
-        if (userSession != null) {
-            userSession.setStatus(0);
-            userSession.setLastActiveTime(LocalDateTime.now());
-            return userSessionMapper.updateById(userSession) > 0;
+        UserSessionDO userSessionDO = userSessionMapper.selectOne(lambdaQueryWrapper);
+        if (userSessionDO != null) {
+            userSessionDO.setStatus(0);
+            userSessionDO.setLastActiveTime(LocalDateTime.now());
+            return userSessionMapper.updateById(userSessionDO) > 0;
         }
         return false;
     }
 
     @Override
     public Integer validateToken(String token) {
-        QueryWrapper<UserSession> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("token", token)
-                   .eq("status", 1)
-                   .gt("expire_time", LocalDateTime.now());
+        LambdaQueryWrapper<UserSessionDO> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserSessionDO::getToken, token)
+                   .eq(UserSessionDO::getStatus, 1)
+                   .gt(UserSessionDO::getExpireTime, LocalDateTime.now());
 
-        UserSession userSession = userSessionMapper.selectOne(queryWrapper);
-        if (userSession != null) {
+        UserSessionDO userSessionDO = userSessionMapper.selectOne(lambdaQueryWrapper);
+        if (userSessionDO != null) {
             // 更新最后活跃时间
-            userSession.setLastActiveTime(LocalDateTime.now());
-            userSessionMapper.updateById(userSession);
-            return userSession.getUid();
+            userSessionDO.setLastActiveTime(LocalDateTime.now());
+            userSessionMapper.updateById(userSessionDO);
+            return userSessionDO.getUid();
         }
         return null;
     }
 
     @Override
     public boolean isLoginNameExists(String loginName) {
-        QueryWrapper<UserAuth> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("loginName", loginName);
-        return userAuthMapper.selectCount(queryWrapper) > 0;
+        LambdaQueryWrapper<UserAuthDO> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserAuthDO::getLoginName, loginName);
+        return userAuthMapper.selectCount(lambdaQueryWrapper) > 0;
     }
 
     /**

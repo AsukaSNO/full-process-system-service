@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @TableName("user_session")
-public class UserSession implements Serializable {
+public class UserSessionDO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

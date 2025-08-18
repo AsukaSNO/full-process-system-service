@@ -1,4 +1,4 @@
-package group.kiseki.auth.dto;
+package group.kiseki.auth.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,12 +15,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDTO {
-    
+
     /**
      * 登录名
      */
     private String loginName;
-    
+
     /**
      * 密码
      */

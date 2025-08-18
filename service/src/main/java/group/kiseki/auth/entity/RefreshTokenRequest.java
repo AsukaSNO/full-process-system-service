@@ -1,4 +1,4 @@
-package group.kiseki.auth.dto;
+package group.kiseki.auth.entity;
 
 import lombok.Data;
 
@@ -9,7 +9,7 @@ import lombok.Data;
  */
 @Data
 public class RefreshTokenRequest {
-    
+
     /**
      * 刷新令牌
      */
